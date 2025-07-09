@@ -1,0 +1,31 @@
+name: workflow_dispatch  #zdj 工作流调度
+
+on:
+  workflow_dispatch:
+
+jobs:
+  # This workflow contains a single job called "Set-matrix"
+  Set-matrix:
+    # The type of runner that the job will run on
+    runs-on: [self-hosted]    
+    # zdj：self-hosted表示不是 GitHub 提供的云服务器，而是你自己搭建或公司内部部署的机器。 如果使用云端的服务器：  runs-on: ubuntu-latest
+    #zdj: onpre 在配置 自建 runner（self-hosted runner）标签（labels） 时自己定义的一个 自定义标签,  这个作用还需要理解 Setting.toml文件中有类似onpre，但是不明白如何关联到一起
+    # Steps represent a sequence of tasks that will be executed as part of the job
+    steps:
+      - name: Change dir owner to working user
+        run: echo ${{ secrets.NEXTPF_SUDO }} | sudo -S chown -R ${USER}:${USER} ${GITHUB_WORKSPACE} 
+        #b-li_neu：${{ secrets.NEXTPF_SUDO }}：从GitHub仓库的加密 secrets 中获取名为NEXTPF_SUDO的值（通常是sudo密码）。
+        #b-li_neu：echo <password> | sudo -S <command>：使用sudo -S从标准输入读取密码，这样我们就可以在非交互模式下使用sudo。这里将secrets中的密码通过管道传递给sudo命令。
+        #b-li_neu：chown -R ${USER}:${USER} ${GITHUB_WORKSPACE}：递归地更改${GITHUB_WORKSPACE}目录的所有者为当前用户（${USER}）。注意，这里使用了两个环境变量：
+        #b-li_neu：${USER}：当前执行命令的用户名（通常是运行runner进程的用户，比如ubuntu、runner等）。
+        #b-li_neu：${GITHUB_WORKSPACE}：GitHub Actions为每个作业设置的环境变量，代表该任务的工作目录（通常指向克隆下来的代码仓库的路径）。
+        #b-li_neu：chown -R ${USER}:${USER} ${GITHUB_WORKSPACE} :
+        #b-li_neu：chown: 更改文件所有者和组
+        #b-li_neu：-R: 递归操作（包含所有子目录和文件）
+        #b-li_neu：${USER}:${USER}: 将所有者(owner)和组(group)都设置为当前用户
+        #b-li_neu：${GITHUB_WORKSPACE}: GitHub Actions 预定义的环境变量，表示当前工作目录路径
+        #zdj： 它的作用是：使用密码提权，修改当前工作目录的所有者权限为当前用户。此部分并不体现真实密码，真实密码是在Github上设置。不适用于 它的作用是：使用密码提权，修改当前工作目录的所有者权限为当前用户。此部分并不体现真实密码，真实密码是在Github上设置。不适用于 GitHub 托管环境（GitHub-hosted runners）在 GitHub 提供的 Ubuntu runner 上，默认不允许 root 登录且没有设置密码，所以这条命令可能会失败
+
+      # Checks-out your repository under ${GITHUB_WORKSPACE}, so your job can access it
+      - name: Checkout this repository
+        uses: actions/checkout@v3
