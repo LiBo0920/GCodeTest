@@ -1,7 +1,7 @@
 name: workflow_dispatch  #zdj 工作流调度
 
 on:
-  workflow_dispatch:
+  push:
 
 jobs:
   # This workflow contains a single job called "Set-matrix"
