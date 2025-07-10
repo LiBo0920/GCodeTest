@@ -18,7 +18,8 @@ jobs:
       - name: Check pwd
         id: test_pwd
         run: |
-          echo "current_path=${pwd}"
+          echo "current_path=$(pwd)"
+          echo "c_p=${WORK_DIR}"
 
 
 
