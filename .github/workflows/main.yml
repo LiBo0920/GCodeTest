@@ -29,6 +29,7 @@ jobs:
       - name: build start
         id: teat_build
         run: |
+          echo "current_path=$(pwd)"
           source script/.env
           python3 script/operation.py -m build -t ubuntu --force-gen-quit -sudo hgtpass
           shell: bash
