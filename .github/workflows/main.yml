@@ -19,9 +19,19 @@ jobs:
         id: test_pwd
         run: |
           echo "current_path=$(pwd)"
-          cp -r ../../../../../nextpf-aubist-ci ./
-
-
+          # cp -r ../../../../../nextpf-aubist-ci ./
+          
+  build:
+    runs-on: [self-hosted]
+    continue-on-error: true
+    needs: [Set-matrix]
+    steps:
+      - name: build start
+        id: teat_build
+        run: |
+          source script/.env
+          python3 script/operation.py -m build -t ubuntu --force-gen-quit -sudo hgtpass
+          shell: bash
 
 
 
