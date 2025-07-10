@@ -19,7 +19,7 @@ jobs:
         id: test_pwd
         run: |
           echo "current_path=$(pwd)"
-          # cp -r ../../../../../nextpf-aubist-ci ./
+          cp -r ../../../../../nextpf-aubist-ci ./
           
   build:
     runs-on: [self-hosted]
