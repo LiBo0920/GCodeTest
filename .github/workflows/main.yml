@@ -29,9 +29,10 @@ jobs:
       - name: build start
         id: teat_build
         run: |
+          cd nextpf-aubist-ci
           echo "current_path=$(pwd)"
-          source nextpf-aubist-ci/script/.env
-          python3 nextpf-aubist-ci/script/operation.py -m build -t ubuntu --force-gen-quit -sudo hgtpass
+          source script/.env
+          python3 script/operation.py -m build -t ubuntu --force-gen-quit -sudo hgtpass
           shell: bash
 
 
