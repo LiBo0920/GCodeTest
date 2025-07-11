@@ -47,7 +47,7 @@ jobs:
      # max-parallel: 2 
     steps:
       - name: Change dir owner to working user
-        run: echo hgtpass | sudo -S chown -R ${USER}:${USER} ${GITHUB_WORKSPACE}
+        run: #echo hgtpass | sudo -S chown -R ${USER}:${USER} ${GITHUB_WORKSPACE}
           echo "static_analyze:"
 
       - name: Check if target was successful and run static_analyze
