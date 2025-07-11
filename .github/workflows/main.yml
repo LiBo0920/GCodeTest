@@ -85,3 +85,6 @@ jobs:
           echo "Target uttest build artifacts exist"
           source script/.env
           python3 script/operation.py -m unit_test -t ubuntu --force-gen-quit -sudo hgtpass
+
+
+          
