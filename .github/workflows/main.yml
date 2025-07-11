@@ -33,40 +33,47 @@ jobs:
           source script/.env
           python3 script/operation.py -m build -t ubuntu --force-gen-quit -d  release -sudo hgtpass
           # shell: bash
+
   static_analyze:
     runs-on: [self-hosted]
     needs: [Set-matrix, build]
-    if: |
-      !contains(github.event.pull_request.title, 'skip ci')
-      && (needs.generate.result == 'success' || needs.generate.result == 'skipped')
-      && (needs.build.result == 'success' || needs.build.result == 'skipped')
-      && !cancelled()
-    strategy:
-      fail-fast: false 
-      max-parallel: 2 
+    #if: |
+      #!contains(github.event.pull_request.title, 'skip ci')
+      #&& (needs.generate.result == 'success' || needs.generate.result == 'skipped')
+      #&& (needs.build.result == 'success' || needs.build.result == 'skipped')
+      #&& !cancelled()
+    #strategy:
+      #fail-fast: false 
+     # max-parallel: 2 
     steps:
       - name: Change dir owner to working user
         run: echo hgtpass | sudo -S chown -R ${USER}:${USER} ${GITHUB_WORKSPACE}
+          echo "static_analyze:"
 
       - name: Check if target was successful and run static_analyze
-        uses: ./nextpf-third-party-actions/retry
-        if: success() && !cancelled()
+        id: static_analyze
+        run: |
+          echo "Target ubuntu build artifacts exist"
+          source script/.env
+          python3 script/operation.py -m static_analyze -t ubuntu -sudo hgtpass
+        #uses: ./nextpf-third-party-actions/retry
+        # if: success() && !cancelled()
         # success() ：仅当所有前置步骤都成功时才执行
         # !cancelled() ：且工作流没有被取消
-        with:
-          max_attempts: 3         # ステップが失敗するまでの試行回数
-          timeout_minutes: 60     # 試行がタイムアウトするまで待機する時間
-          retry_wait_seconds: 600 # 再試行まで待機する秒数
-          retry_on_exit_code: 4   # スクリプトからの終了コード
-          command: |
-            if [ -d "artifacts/build/ubuntu" ]; then
-              echo "Target ubuntu build artifacts exist"
-              source script/.env
-              python3 script/operation.py -m static_analyze -t ubuntu -sudo hgtpass
-            else
-              echo "Target ubuntu did not build successfully. Skipping static_analyze."
-              exit 1
-            fi
+        #with:
+          #max_attempts: 3         # ステップが失敗するまでの試行回数
+          #timeout_minutes: 60     # 試行がタイムアウトするまで待機する時間
+          #retry_wait_seconds: 600 # 再試行まで待機する秒数
+          #retry_on_exit_code: 4   # スクリプトからの終了コード
+          #command: |
+           # if [ -d "artifacts/build/ubuntu" ]; then
+             # echo "Target ubuntu build artifacts exist"
+              #source script/.env
+              #python3 script/operation.py -m static_analyze -t ubuntu -sudo hgtpass
+            #else
+              #echo "Target ubuntu did not build successfully. Skipping static_analyze."
+             # exit 1
+            #fi
           # shell: bash
 
 
