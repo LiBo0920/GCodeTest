@@ -76,6 +76,11 @@ jobs:
             #fi
           # shell: bash
 
-
-
-        
+  unit_test_vm:
+    runs-on: [self-hosted]
+    needs: [Set-matrix, build]
+    steps:
+      - name: Check if target was successful and run unit_test_VM
+        run: |
+          source script/.env
+            python3 script/operation.py -m unit_test -t ubuntu --force-gen-quit -sudo hgtpass
