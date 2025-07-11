@@ -32,7 +32,7 @@ jobs:
           echo "current_path=$(pwd)"
           source script/.env
           python3 script/operation.py -m build -t ubuntu --force-gen-quit -d  release -sudo hgtpass
-          shell: bash
+          # shell: bash
   static_analyze:
     runs-on: [self-hosted]
     needs: [Set-matrix, build]
@@ -67,7 +67,7 @@ jobs:
               echo "Target ubuntu did not build successfully. Skipping static_analyze."
               exit 1
             fi
-          shell: bash
+          # shell: bash
 
 
 
