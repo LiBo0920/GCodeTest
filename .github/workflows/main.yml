@@ -23,11 +23,12 @@ jobs:
           SCRIPT_VERSION=$(python3 submodule_operation.py -m show_version -t script --no-detail)
           COMMON_UTILITIES_VERSION=$(python3 submodule_operation.py -m show_version -t common_utilities --no-detail)
           UNIQUE_UTILITIES_VERSION=$(python3 submodule_operation.py -m show_version -t unique_utilities --no-detail)
-          IMAGE_LIST_VERSION=$(python3 submodule_operation.py -m show_version -t image_list --no-detail)
+          #IMAGE_LIST_VERSION=$(python3 submodule_operation.py -m show_version -t image_list --no-detail)
           echo "script_version=${SCRIPT_VERSION}"
           echo "common_utilities_version=${COMMON_UTILITIES_VERSION}"
           echo "unique_utilities_version=${UNIQUE_UTILITIES_VERSION}"
-          echo "image_list_version=${IMAGE_LIST_VERSION}"
+          #echo "image_list_version=${IMAGE_LIST_VERSION}"
+        shell: bash 
           
           
   build:
