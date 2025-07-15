@@ -28,7 +28,7 @@ jobs:
           echo "common_utilities_version=${COMMON_UTILITIES_VERSION}"
           echo "unique_utilities_version=${UNIQUE_UTILITIES_VERSION}"
           #echo "image_list_version=${IMAGE_LIST_VERSION}"
-        shell: bash 
+        #shell: bash 
           
           
   build:
