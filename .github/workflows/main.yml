@@ -24,10 +24,17 @@ jobs:
           COMMON_UTILITIES_VERSION=$(python3 submodule_operation.py -m show_version -t common_utilities --no-detail)
           UNIQUE_UTILITIES_VERSION=$(python3 submodule_operation.py -m show_version -t unique_utilities --no-detail)
           #IMAGE_LIST_VERSION=$(python3 submodule_operation.py -m show_version -t image_list --no-detail)
-          echo "script_version=${SCRIPT_VERSION}"
-          echo "common_utilities_version=${COMMON_UTILITIES_VERSION}"
-          echo "unique_utilities_version=${UNIQUE_UTILITIES_VERSION}"
-          #echo "image_list_version=${IMAGE_LIST_VERSION}"
+          echo "script_version=${SCRIPT_VERSION}" >> $GITHUB_OUTPUT
+          echo "common_utilities_version=${COMMON_UTILITIES_VERSION}" >> $GITHUB_OUTPUT
+          echo "unique_utilities_version=${UNIQUE_UTILITIES_VERSION}" >> $GITHUB_OUTPUT
+          #echo "image_list_version=${IMAGE_LIST_VERSION}" >> $GITHUB_OUTPUT
+      - name: Convert TOML to JSON
+        run: |
+          source script/.env 
+          echo "WORK_DIR = ${WORK_DIR}"
+          cat ${WORK_DIR}/apps/Setting.toml \
+              | docker run -i --rm t-github.t.rd.honda.com/automobile/nextpf-utilities/dasel:latest -r toml -w json \
+              | jq . > ${WORK_DIR}/apps/Setting01.json
         #shell: bash 
           
           
