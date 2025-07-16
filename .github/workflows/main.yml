@@ -35,6 +35,86 @@ jobs:
           cat ${WORK_DIR}/apps/Setting.toml \
               | docker run -i --rm t-github.t.rd.honda.com/automobile/nextpf-utilities/dasel:latest -r toml -w json \
               | jq . > ${WORK_DIR}/apps/Setting01.json
+      - name: Get the information from Setting.toml
+        id: Set-matrix
+        run: |
+          source script/.env
+
+          # CIジョブの情報をパース/CI透视作业信息；代码解释详见：OneNote
+          REQUIRED_JOBS=$(docker run --rm -v $(pwd):/work -e LOCAL_USER_ID=$(id -u) ${UTILITIES_DOCKER_IMAGE} \
+            bash -c "jq -c '.ci.jobs|map(select(.enable == true)|.name)|unique' /work/apps/Setting.json")
+
+          # ビルド情報(Setting.toml[ci][jobs][build])をパース/将构建信息（Setting.toml[ci][jobs][build]）
+          BUILD_INFO=$(docker run --rm -v $(pwd):/work -e LOCAL_USER_ID=$(id -u) ${UTILITIES_DOCKER_IMAGE} \
+            bash -c "jq -c '.ci.jobs[] | select(.name==\"build\")' /work/apps/Setting.json")
+
+          # ジェネレート情報(Setting.toml[ci][jobs][generate])をパース
+          GENERATE_INFO=$(docker run --rm -v $(pwd):/work -e LOCAL_USER_ID=$(id -u) ${UTILITIES_DOCKER_IMAGE} \
+            bash -c "jq -c '.ci.jobs[] | select(.name==\"generate\")' /work/apps/Setting.json")
+
+          # 静的解析情報(Setting.toml[ci][jobs][static_analyze])をパース
+          STATIC_ANALYZE_INFO=$(docker run --rm -v $(pwd):/work -e LOCAL_USER_ID=$(id -u) ${UTILITIES_DOCKER_IMAGE} \
+            bash -c "jq -c '.ci.jobs[] | select(.name==\"static_analyze\")' /work/apps/Setting.json")
+
+          # フロー解析情報(Setting.toml[ci][jobs][flow_analyze])をパース
+          FLOW_ANALYZE_INFO=$(docker run --rm -v $(pwd):/work -e LOCAL_USER_ID=$(id -u) ${UTILITIES_DOCKER_IMAGE} \
+            bash -c "jq -c '.ci.jobs[] | select(.name==\"flow_analyze\")' /work/apps/Setting.json")
+
+          # VM向け単体テスト情報(Setting.toml[ci][jobs][unit_test_vm])をパース
+          UT_TEST_VM_INFO=$(docker run --rm -v $(pwd):/work -e LOCAL_USER_ID=$(id -u) ${UTILITIES_DOCKER_IMAGE} \
+            bash -c "jq -c '.ci.jobs[] | select(.name==\"unit_test_vm\")' /work/apps/Setting.json")
+
+          # HW向け単体テスト情報(Setting.toml[ci][jobs][unit_test_hw])をパース
+          UT_TEST_HW_INFO=$(docker run --rm -v $(pwd):/work -e LOCAL_USER_ID=$(id -u) ${UTILITIES_DOCKER_IMAGE} \
+            bash -c "jq -c '.ci.jobs[] | select(.name==\"unit_test_hw\")' /work/apps/Setting.json")
+
+          # VM向けS0S1Coverage計測テスト情報(Setting.toml[ci][jobs][integration_test_vm_s0s1coverage])をパース
+          IT_TEST_VM_S0S1Coverage_INFO=$(docker run --rm -v $(pwd):/work -e LOCAL_USER_ID=$(id -u) ${UTILITIES_DOCKER_IMAGE} \
+            bash -c "jq -c '.ci.jobs[] | select(.name==\"integration_test_vm_s0s1coverage\")' /work/apps/Setting.json")
+
+          # HW向けS0S1Coverage計測テスト情報(Setting.toml[ci][jobs][integration_test_hw_s0s1coverage])をパース
+          IT_TEST_HW_S0S1Coverage_INFO=$(docker run --rm -v $(pwd):/work -e LOCAL_USER_ID=$(id -u) ${UTILITIES_DOCKER_IMAGE} \
+            bash -c "jq -c '.ci.jobs[] | select(.name==\"integration_test_hw_s0s1coverage\")' /work/apps/Setting.json")
+
+          # VM向け結合テスト情報(Setting.toml[ci][jobs][integration_test_vm])をパース
+          IT_TEST_VM_INFO=$(docker run --rm -v $(pwd):/work -e LOCAL_USER_ID=$(id -u) ${UTILITIES_DOCKER_IMAGE} \
+            bash -c "jq -c '.ci.jobs[] | select(.name==\"integration_test_vm\")' /work/apps/Setting.json")
+
+          # HW向け結合テスト情報(Setting.toml[ci][jobs][integration_test_hw])をパース
+          IT_TEST_HW_INFO=$(docker run --rm -v $(pwd):/work -e LOCAL_USER_ID=$(id -u) ${UTILITIES_DOCKER_IMAGE} \
+            bash -c "jq -c '.ci.jobs[] | select(.name==\"integration_test_hw\")' /work/apps/Setting.json")
+
+          # VM向け適格性確認テスト情報(Setting.toml[ci][jobs][qualification_test_vm])をパース
+          QT_TEST_VM_INFO=$(docker run --rm -v $(pwd):/work -e LOCAL_USER_ID=$(id -u) ${UTILITIES_DOCKER_IMAGE} \
+            bash -c "jq -c '.ci.jobs[] | select(.name==\"qualification_test_vm\")' /work/apps/Setting.json")
+
+          # HW向け適格性確認テスト情報(Setting.toml[ci][jobs][qualification_test_hw])をパース
+          QT_TEST_HW_INFO=$(docker run --rm -v $(pwd):/work -e LOCAL_USER_ID=$(id -u) ${UTILITIES_DOCKER_IMAGE} \
+            bash -c "jq -c '.ci.jobs[] | select(.name==\"qualification_test_hw\")' /work/apps/Setting.json")
+
+          # 実機のクリーン機能情報(Setting.toml[hw_initialization][clear_hw_state])をパース
+          CLEAR_HW_STATE=$(docker run --rm -v $(pwd):/work -e LOCAL_USER_ID=$(id -u) ${UTILITIES_DOCKER_IMAGE} \
+              bash -c "jq -r '.hw_initialization | select(.enable == true) | .clear_hw_state' /work/apps/Setting.json")
+
+          # Notification情報(Setting.toml[ci][jobs][notification])をパース
+          NOTIFICATION_INFO=$(docker run --rm -v $(pwd):/work -e LOCAL_USER_ID=$(id -u) ${UTILITIES_DOCKER_IMAGE} \
+            bash -c "jq -c '.ci.jobs[] | select(.name==\"notification\")' /work/apps/Setting.json")
+
+          echo "required_jobs=${REQUIRED_JOBS}" >> $GITHUB_OUTPUT
+          echo "build_info=${BUILD_INFO}" >> $GITHUB_OUTPUT
+          echo "generate_info=${GENERATE_INFO}" >> $GITHUB_OUTPUT
+          echo "static_analyze_info=${STATIC_ANALYZE_INFO}" >> $GITHUB_OUTPUT
+          echo "flow_analyze_info=${FLOW_ANALYZE_INFO}" >> $GITHUB_OUTPUT
+          echo "ut_test_vm_info=${UT_TEST_VM_INFO}" >> $GITHUB_OUTPUT
+          echo "ut_test_hw_info=${UT_TEST_HW_INFO}" >> $GITHUB_OUTPUT
+          echo "it_test_vm_s0s1coverage_info=${IT_TEST_VM_S0S1Coverage_INFO}" >> $GITHUB_OUTPUT
+          echo "it_test_hw_s0s1coverage_info=${IT_TEST_HW_S0S1Coverage_INFO}" >> $GITHUB_OUTPUT
+          echo "it_test_vm_info=${IT_TEST_VM_INFO}" >> $GITHUB_OUTPUT
+          echo "it_test_hw_info=${IT_TEST_HW_INFO}" >> $GITHUB_OUTPUT
+          echo "qt_test_vm_info=${QT_TEST_VM_INFO}" >> $GITHUB_OUTPUT
+          echo "qt_test_hw_info=${QT_TEST_HW_INFO}" >> $GITHUB_OUTPUT
+          echo "clear_hw_state=${CLEAR_HW_STATE}" >> $GITHUB_OUTPUT
+          echo "notification_info=${NOTIFICATION_INFO}" >> $GITHUB_OUTPUT
         #shell: bash 
           
           
