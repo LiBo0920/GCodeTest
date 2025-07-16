@@ -115,6 +115,26 @@ jobs:
           echo "qt_test_hw_info=${QT_TEST_HW_INFO}" >> $GITHUB_OUTPUT
           echo "clear_hw_state=${CLEAR_HW_STATE}" >> $GITHUB_OUTPUT
           echo "notification_info=${NOTIFICATION_INFO}" >> $GITHUB_OUTPUT
+    outputs:
+      required_jobs: ${{ steps.Set-matrix.outputs.required_jobs }}
+      build_info: ${{ steps.Set-matrix.outputs.build_info }}
+      generate_info: ${{ steps.Set-matrix.outputs.generate_info }}
+      static_analyze_info: ${{ steps.Set-matrix.outputs.static_analyze_info }}
+      flow_analyze_info: ${{ steps.Set-matrix.outputs.flow_analyze_info }}
+      ut_test_vm_info: ${{ steps.Set-matrix.outputs.ut_test_vm_info }}
+      ut_test_hw_info: ${{ steps.Set-matrix.outputs.ut_test_hw_info }}
+      it_test_vm_s0s1coverage_info: ${{ steps.Set-matrix.outputs.it_test_vm_s0s1coverage_info }}
+      it_test_hw_s0s1coverage_info: ${{ steps.Set-matrix.outputs.it_test_hw_s0s1coverage_info }}
+      it_test_vm_info: ${{ steps.Set-matrix.outputs.it_test_vm_info }}
+      it_test_hw_info: ${{ steps.Set-matrix.outputs.it_test_hw_info }}
+      qt_test_vm_info: ${{ steps.Set-matrix.outputs.qt_test_vm_info }}
+      qt_test_hw_info: ${{ steps.Set-matrix.outputs.qt_test_hw_info }}
+      script_version: ${{ steps.Set-version.outputs.script_version }}
+      common_utilities_version: ${{ steps.Set-version.outputs.common_utilities_version }}
+      unique_utilities_version: ${{ steps.Set-version.outputs.unique_utilities_version }}
+      image_list_version: ${{ steps.Set-version.outputs.image_list_version }}
+      clear_hw_state: ${{ steps.Set-matrix.outputs.clear_hw_state }}
+      notification_info: ${{steps.Set-matrix.outputs.notification_info}}
         #shell: bash 
           
           
