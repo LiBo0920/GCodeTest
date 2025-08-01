@@ -1,4 +1,4 @@
-name: workflow_dispatch  #
+name: workflow_dispatch  #zdj 工作流调度
 
 on:
   push:
@@ -7,7 +7,10 @@ jobs:
   # This workflow contains a single job called "Set-matrix"
   Set-matrix:
     # The type of runner that the job will run on
-    runs-on: [self-hosted,Linux]
+    runs-on: [self-hosted]    
+    # zdj：self-hosted表示不是 GitHub 提供的云服务器，而是你自己搭建或公司内部部署的机器。 如果使用云端的服务器：  runs-on: ubuntu-latest
+    #zdj: onpre 在配置 自建 runner（self-hosted runner）标签（labels） 时自己定义的一个 自定义标签,  这个作用还需要理解 Setting.toml文件中有类似onpre，但是不明白如何关联到一起
+    # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
       
       - name: Checkout this repository
@@ -16,127 +19,7 @@ jobs:
         id: test_pwd
         run: |
           echo "current_path=$(pwd)"
-          cp -r ../../../../../nextpf-aubist-ci/* ./
-      - name: Get submodule version from Setting.toml
-        id: Set-version
-        run: |
-          SCRIPT_VERSION=$(python3 submodule_operation.py -m show_version -t script --no-detail)
-          COMMON_UTILITIES_VERSION=$(python3 submodule_operation.py -m show_version -t common_utilities --no-detail)
-          UNIQUE_UTILITIES_VERSION=$(python3 submodule_operation.py -m show_version -t unique_utilities --no-detail)
-          #IMAGE_LIST_VERSION=$(python3 submodule_operation.py -m show_version -t image_list --no-detail)
-          echo "script_version=${SCRIPT_VERSION}" >> $GITHUB_OUTPUT
-          echo "common_utilities_version=${COMMON_UTILITIES_VERSION}" >> $GITHUB_OUTPUT
-          echo "unique_utilities_version=${UNIQUE_UTILITIES_VERSION}" >> $GITHUB_OUTPUT
-          #echo "image_list_version=${IMAGE_LIST_VERSION}" >> $GITHUB_OUTPUT
-      - name: Convert TOML to JSON
-        run: |
-          source script/.env 
-          echo "WORK_DIR = ${WORK_DIR}"
-          cat ${WORK_DIR}/apps/Setting.toml \
-              | docker run -i --rm t-github.t.rd.honda.com/automobile/nextpf-utilities/dasel:latest -r toml -w json \
-              | jq . > ${WORK_DIR}/apps/Setting01.json
-      - name: Get the information from Setting.toml
-        id: Set-matrix
-        run: |
-          source script/.env
-
-          # CIジョブの情報をパース/CI透视作业信息；代码解释详见：OneNote
-          REQUIRED_JOBS=$(docker run --rm -v $(pwd):/work -e LOCAL_USER_ID=$(id -u) ${UTILITIES_DOCKER_IMAGE} \
-            bash -c "jq -c '.ci.jobs|map(select(.enable == true)|.name)|unique' /work/apps/Setting.json")
-
-          # ビルド情報(Setting.toml[ci][jobs][build])をパース/将构建信息（Setting.toml[ci][jobs][build]）
-          BUILD_INFO=$(docker run --rm -v $(pwd):/work -e LOCAL_USER_ID=$(id -u) ${UTILITIES_DOCKER_IMAGE} \
-            bash -c "jq -c '.ci.jobs[] | select(.name==\"build\")' /work/apps/Setting.json")
-
-          # ジェネレート情報(Setting.toml[ci][jobs][generate])をパース
-          GENERATE_INFO=$(docker run --rm -v $(pwd):/work -e LOCAL_USER_ID=$(id -u) ${UTILITIES_DOCKER_IMAGE} \
-            bash -c "jq -c '.ci.jobs[] | select(.name==\"generate\")' /work/apps/Setting.json")
-
-          # 静的解析情報(Setting.toml[ci][jobs][static_analyze])をパース
-          STATIC_ANALYZE_INFO=$(docker run --rm -v $(pwd):/work -e LOCAL_USER_ID=$(id -u) ${UTILITIES_DOCKER_IMAGE} \
-            bash -c "jq -c '.ci.jobs[] | select(.name==\"static_analyze\")' /work/apps/Setting.json")
-
-          # フロー解析情報(Setting.toml[ci][jobs][flow_analyze])をパース
-          FLOW_ANALYZE_INFO=$(docker run --rm -v $(pwd):/work -e LOCAL_USER_ID=$(id -u) ${UTILITIES_DOCKER_IMAGE} \
-            bash -c "jq -c '.ci.jobs[] | select(.name==\"flow_analyze\")' /work/apps/Setting.json")
-
-          # VM向け単体テスト情報(Setting.toml[ci][jobs][unit_test_vm])をパース
-          UT_TEST_VM_INFO=$(docker run --rm -v $(pwd):/work -e LOCAL_USER_ID=$(id -u) ${UTILITIES_DOCKER_IMAGE} \
-            bash -c "jq -c '.ci.jobs[] | select(.name==\"unit_test_vm\")' /work/apps/Setting.json")
-
-          # HW向け単体テスト情報(Setting.toml[ci][jobs][unit_test_hw])をパース
-          UT_TEST_HW_INFO=$(docker run --rm -v $(pwd):/work -e LOCAL_USER_ID=$(id -u) ${UTILITIES_DOCKER_IMAGE} \
-            bash -c "jq -c '.ci.jobs[] | select(.name==\"unit_test_hw\")' /work/apps/Setting.json")
-
-          # VM向けS0S1Coverage計測テスト情報(Setting.toml[ci][jobs][integration_test_vm_s0s1coverage])をパース
-          IT_TEST_VM_S0S1Coverage_INFO=$(docker run --rm -v $(pwd):/work -e LOCAL_USER_ID=$(id -u) ${UTILITIES_DOCKER_IMAGE} \
-            bash -c "jq -c '.ci.jobs[] | select(.name==\"integration_test_vm_s0s1coverage\")' /work/apps/Setting.json")
-
-          # HW向けS0S1Coverage計測テスト情報(Setting.toml[ci][jobs][integration_test_hw_s0s1coverage])をパース
-          IT_TEST_HW_S0S1Coverage_INFO=$(docker run --rm -v $(pwd):/work -e LOCAL_USER_ID=$(id -u) ${UTILITIES_DOCKER_IMAGE} \
-            bash -c "jq -c '.ci.jobs[] | select(.name==\"integration_test_hw_s0s1coverage\")' /work/apps/Setting.json")
-
-          # VM向け結合テスト情報(Setting.toml[ci][jobs][integration_test_vm])をパース
-          IT_TEST_VM_INFO=$(docker run --rm -v $(pwd):/work -e LOCAL_USER_ID=$(id -u) ${UTILITIES_DOCKER_IMAGE} \
-            bash -c "jq -c '.ci.jobs[] | select(.name==\"integration_test_vm\")' /work/apps/Setting.json")
-
-          # HW向け結合テスト情報(Setting.toml[ci][jobs][integration_test_hw])をパース
-          IT_TEST_HW_INFO=$(docker run --rm -v $(pwd):/work -e LOCAL_USER_ID=$(id -u) ${UTILITIES_DOCKER_IMAGE} \
-            bash -c "jq -c '.ci.jobs[] | select(.name==\"integration_test_hw\")' /work/apps/Setting.json")
-
-          # VM向け適格性確認テスト情報(Setting.toml[ci][jobs][qualification_test_vm])をパース
-          QT_TEST_VM_INFO=$(docker run --rm -v $(pwd):/work -e LOCAL_USER_ID=$(id -u) ${UTILITIES_DOCKER_IMAGE} \
-            bash -c "jq -c '.ci.jobs[] | select(.name==\"qualification_test_vm\")' /work/apps/Setting.json")
-
-          # HW向け適格性確認テスト情報(Setting.toml[ci][jobs][qualification_test_hw])をパース
-          QT_TEST_HW_INFO=$(docker run --rm -v $(pwd):/work -e LOCAL_USER_ID=$(id -u) ${UTILITIES_DOCKER_IMAGE} \
-            bash -c "jq -c '.ci.jobs[] | select(.name==\"qualification_test_hw\")' /work/apps/Setting.json")
-
-          # 実機のクリーン機能情報(Setting.toml[hw_initialization][clear_hw_state])をパース
-          CLEAR_HW_STATE=$(docker run --rm -v $(pwd):/work -e LOCAL_USER_ID=$(id -u) ${UTILITIES_DOCKER_IMAGE} \
-              bash -c "jq -r '.hw_initialization | select(.enable == true) | .clear_hw_state' /work/apps/Setting.json")
-
-          # Notification情報(Setting.toml[ci][jobs][notification])をパース
-          NOTIFICATION_INFO=$(docker run --rm -v $(pwd):/work -e LOCAL_USER_ID=$(id -u) ${UTILITIES_DOCKER_IMAGE} \
-            bash -c "jq -c '.ci.jobs[] | select(.name==\"notification\")' /work/apps/Setting.json")
-
-          echo "required_jobs=${REQUIRED_JOBS}" >> $GITHUB_OUTPUT
-          echo "build_info=${BUILD_INFO}" >> $GITHUB_OUTPUT
-          echo "generate_info=${GENERATE_INFO}" >> $GITHUB_OUTPUT
-          echo "static_analyze_info=${STATIC_ANALYZE_INFO}" >> $GITHUB_OUTPUT
-          echo "flow_analyze_info=${FLOW_ANALYZE_INFO}" >> $GITHUB_OUTPUT
-          echo "ut_test_vm_info=${UT_TEST_VM_INFO}" >> $GITHUB_OUTPUT
-          echo "ut_test_hw_info=${UT_TEST_HW_INFO}" >> $GITHUB_OUTPUT
-          echo "it_test_vm_s0s1coverage_info=${IT_TEST_VM_S0S1Coverage_INFO}" >> $GITHUB_OUTPUT
-          echo "it_test_hw_s0s1coverage_info=${IT_TEST_HW_S0S1Coverage_INFO}" >> $GITHUB_OUTPUT
-          echo "it_test_vm_info=${IT_TEST_VM_INFO}" >> $GITHUB_OUTPUT
-          echo "it_test_hw_info=${IT_TEST_HW_INFO}" >> $GITHUB_OUTPUT
-          echo "qt_test_vm_info=${QT_TEST_VM_INFO}" >> $GITHUB_OUTPUT
-          echo "qt_test_hw_info=${QT_TEST_HW_INFO}" >> $GITHUB_OUTPUT
-          echo "clear_hw_state=${CLEAR_HW_STATE}" >> $GITHUB_OUTPUT
-          echo "notification_info=${NOTIFICATION_INFO}" >> $GITHUB_OUTPUT
-    outputs:
-      required_jobs: ${{ steps.Set-matrix.outputs.required_jobs }}
-      build_info: ${{ steps.Set-matrix.outputs.build_info }}
-      generate_info: ${{ steps.Set-matrix.outputs.generate_info }}
-      static_analyze_info: ${{ steps.Set-matrix.outputs.static_analyze_info }}
-      flow_analyze_info: ${{ steps.Set-matrix.outputs.flow_analyze_info }}
-      ut_test_vm_info: ${{ steps.Set-matrix.outputs.ut_test_vm_info }}
-      ut_test_hw_info: ${{ steps.Set-matrix.outputs.ut_test_hw_info }}
-      it_test_vm_s0s1coverage_info: ${{ steps.Set-matrix.outputs.it_test_vm_s0s1coverage_info }}
-      it_test_hw_s0s1coverage_info: ${{ steps.Set-matrix.outputs.it_test_hw_s0s1coverage_info }}
-      it_test_vm_info: ${{ steps.Set-matrix.outputs.it_test_vm_info }}
-      it_test_hw_info: ${{ steps.Set-matrix.outputs.it_test_hw_info }}
-      qt_test_vm_info: ${{ steps.Set-matrix.outputs.qt_test_vm_info }}
-      qt_test_hw_info: ${{ steps.Set-matrix.outputs.qt_test_hw_info }}
-      script_version: ${{ steps.Set-version.outputs.script_version }}
-      common_utilities_version: ${{ steps.Set-version.outputs.common_utilities_version }}
-      unique_utilities_version: ${{ steps.Set-version.outputs.unique_utilities_version }}
-      image_list_version: ${{ steps.Set-version.outputs.image_list_version }}
-      clear_hw_state: ${{ steps.Set-matrix.outputs.clear_hw_state }}
-      notification_info: ${{steps.Set-matrix.outputs.notification_info}}
-        #shell: bash 
-          
+          #cp -r ../../../../../nextpf-aubist-ci/* ./
           
   build:
     runs-on: [self-hosted]
@@ -148,12 +31,20 @@ jobs:
         run: |
           echo "current_path=$(pwd)"
           source script/.env
-          #python3 script/operation.py -m build -t ubuntu --force-gen-quit -d  release -sudo hgtpass
+          python3 script/operation.py -m build -t ubuntu --force-gen-quit -d  release -sudo hgtpass
           # shell: bash
 
   static_analyze:
     runs-on: [self-hosted]
-    needs: [Set-matrix, build] 
+    needs: [Set-matrix, build]
+    #if: |
+      #!contains(github.event.pull_request.title, 'skip ci')
+      #&& (needs.generate.result == 'success' || needs.generate.result == 'skipped')
+      #&& (needs.build.result == 'success' || needs.build.result == 'skipped')
+      #&& !cancelled()
+    #strategy:
+      #fail-fast: false 
+     # max-parallel: 2 
     steps:
       - name: Change dir owner to working user
         run: #echo hgtpass | sudo -S chown -R ${USER}:${USER} ${GITHUB_WORKSPACE}
@@ -164,7 +55,26 @@ jobs:
         run: |
           echo "Target ubuntu build artifacts exist"
           source script/.env
-          #python3 script/operation.py -m static_analyze -t ubuntu -sudo hgtpass
+          python3 script/operation.py -m static_analyze -t ubuntu -sudo hgtpass
+        #uses: ./nextpf-third-party-actions/retry
+        # if: success() && !cancelled()
+        # success() ：仅当所有前置步骤都成功时才执行
+        # !cancelled() ：且工作流没有被取消
+        #with:
+          #max_attempts: 3         # ステップが失敗するまでの試行回数
+          #timeout_minutes: 60     # 試行がタイムアウトするまで待機する時間
+          #retry_wait_seconds: 600 # 再試行まで待機する秒数
+          #retry_on_exit_code: 4   # スクリプトからの終了コード
+          #command: |
+           # if [ -d "artifacts/build/ubuntu" ]; then
+             # echo "Target ubuntu build artifacts exist"
+              #source script/.env
+              #python3 script/operation.py -m static_analyze -t ubuntu -sudo hgtpass
+            #else
+              #echo "Target ubuntu did not build successfully. Skipping static_analyze."
+             # exit 1
+            #fi
+          # shell: bash
 
   unit_test_vm:
     runs-on: [self-hosted]
@@ -174,7 +84,7 @@ jobs:
         run: |
           echo "Target uttest build artifacts exist"
           source script/.env
-          #python3 script/operation.py -m unit_test -t ubuntu --force-gen-quit -sudo hgtpass
+          python3 script/operation.py -m unit_test -t ubuntu --force-gen-quit -sudo hgtpass
 
 
         
