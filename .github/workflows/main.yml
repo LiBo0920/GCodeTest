@@ -33,7 +33,7 @@ jobs:
           echo "current_path=$(pwd)"
           source script/.env
           #python3 script/operation.py -m build -t ubuntu --force-gen-quit -d  release -sudo hgtpass
-          python3 script/operation.py -m build -t qnx --no-cache
+          python3 script/operation.py -m build -t qnx --no-cache -sudo hgtpass
           # shell: bash
 
   static_analyze:
@@ -58,7 +58,7 @@ jobs:
           echo "Target ubuntu build artifacts exist"
           source script/.env
           # python3 script/operation.py -m static_analyze -t ubuntu -sudo hgtpass
-          python3 script/operation.py -m static_analyze -t qnx --no-cache
+          python3 script/operation.py -m static_analyze -t qnx --no-cache -sudo hgtpass
         #uses: ./nextpf-third-party-actions/retry
         # if: success() && !cancelled()
         # success() ：仅当所有前置步骤都成功时才执行
